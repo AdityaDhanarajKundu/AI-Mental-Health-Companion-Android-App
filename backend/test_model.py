@@ -7,7 +7,7 @@ sentiment_pipeline = pipeline("text-classification", model=model_path, tokenizer
 
 # Test the model with example
 if __name__ == "__main__":
-    test_input = "I feel anxious and overwhelmed"
+    test_input = "I want to become a great astronaut"
     result = sentiment_pipeline(test_input)
     print("Input: ", test_input)
     print("Result: ", result)
