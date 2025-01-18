@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">MentalHealthCompanion</string>
+    <string name="default_web_client_id">1088986408250-2kpr27q3eqemheb9epr4jsqbs7ogbthq.apps.googleusercontent.com</string>
+
 </resources>

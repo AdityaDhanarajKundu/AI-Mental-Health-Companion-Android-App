@@ -56,6 +56,7 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.android.gms:play-services-auth:20.5.0")
     implementation(libs.androidx.core.ktx)
+    implementation("androidx.compose.material:material-icons-extended:1.4.3")
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
