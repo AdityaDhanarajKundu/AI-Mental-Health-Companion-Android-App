@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 fun AuthScreen(
     activity : Activity,
     onAuthSuccess:  () -> Unit,
+    onGoogleAuth: () -> Unit
 ) {
     var authState by remember {
         mutableStateOf<AuthState>(AuthState.Unauthenticated)
@@ -66,6 +67,12 @@ fun AuthScreen(
                 }
                 Text("Choose an authentication method:")
                 Spacer(modifier = Modifier.height(18.dp))
+                GoogleAuthUI(
+                    onSignInSuccess = onAuthSuccess,
+                    onError = { message -> authState = AuthState.Error(message) },
+                    onGoogleSignIn = onGoogleAuth
+                )
+                Spacer(modifier = Modifier.height(14.dp))
                 Button(onClick = {
                     authState = AuthState.EmailSignIn
                 }) {
