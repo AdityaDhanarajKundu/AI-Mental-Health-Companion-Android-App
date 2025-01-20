@@ -55,6 +55,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.android.gms:play-services-auth:20.5.0")
+    implementation("com.facebook.android:facebook-android-sdk:latest.release")
     implementation(libs.androidx.core.ktx)
     implementation("androidx.compose.material:material-icons-extended:1.4.3")
     implementation(libs.androidx.lifecycle.runtime.ktx)

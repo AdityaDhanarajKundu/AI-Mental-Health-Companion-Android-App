@@ -22,9 +22,9 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun AuthScreen(
-    activity : Activity,
+    activity: Activity,
     onAuthSuccess:  () -> Unit,
-    onGoogleAuth: () -> Unit
+    onGoogleAuth: () -> Unit,
 ) {
     var authState by remember {
         mutableStateOf<AuthState>(AuthState.Unauthenticated)
@@ -72,13 +72,13 @@ fun AuthScreen(
                     onError = { message -> authState = AuthState.Error(message) },
                     onGoogleSignIn = onGoogleAuth
                 )
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 Button(onClick = {
                     authState = AuthState.EmailSignIn
                 }) {
                     Text("Sign in with Email")
                 }
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(45.dp))
                 Text(text = "Don't have an account?")
                 Button(onClick = {
                     authState = AuthState.SignUp
