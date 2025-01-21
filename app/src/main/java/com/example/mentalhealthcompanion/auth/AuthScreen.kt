@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -72,7 +73,9 @@ fun AuthScreen(
             }
             else ->{
                 // Default unauthenticated UI
-                Column {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(start = 36.dp, top = 0.dp)
+                ) {
                     Text(
                         text = "Welcome to E-motionAI",
                         color = MaterialTheme.colorScheme.primary,
@@ -85,12 +88,7 @@ fun AuthScreen(
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.padding(bottom = 32.dp)
                     )
-                    Text("Choose an authentication method:")
-                    Spacer(modifier = Modifier.height(18.dp))
-
-
                 }
-
                 GoogleAuthUI(
                     onSignInSuccess = onAuthSuccess,
                     onError = { message -> authState = AuthState.Error(message) },
@@ -114,7 +112,7 @@ fun AuthScreen(
                         Text("Sign In with Email")
                     }
                 }
-                Spacer(modifier = Modifier.height(45.dp))
+                Spacer(modifier = Modifier.height(20.dp))
                 Text(text = "Don't have an account?")
                 Button(onClick = {
                     authState = AuthState.SignUp
@@ -129,7 +127,7 @@ fun AuthScreen(
                             modifier = Modifier.size(24.dp),
                             tint = Color.White
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(16.dp))
                         Text("Sign Up")
                     }
                 }
