@@ -1,5 +1,6 @@
 package com.example.mentalhealthcompanion
 
+import android.app.Activity
 import android.content.ContentValues.TAG
 import android.content.Intent
 import android.content.IntentSender
@@ -8,8 +9,14 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -17,7 +24,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -38,58 +47,15 @@ class MainActivity : ComponentActivity() {
 
     private val REQ_ONE_TAP = 2
     private var showOneTapUI = true
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        auth = FirebaseAuth.getInstance()  // Initialize the firebase authentication instance
-        // initialize the one tap client
-        oneTapClient = Identity.getSignInClient(this)
-        signInRequest = BeginSignInRequest.builder().setGoogleIdTokenRequestOptions(
-                BeginSignInRequest.GoogleIdTokenRequestOptions.builder().setSupported(true)
-                    .setServerClientId(getString(R.string.default_web_client_id))
-                    .setFilterByAuthorizedAccounts(false).build()
-            ).build()
 
-        setContent {
-            MentalHealthCompanionTheme {
-                val isAuthenticated = remember { mutableStateOf(false) }
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
-                ) {
-                    AuthScreen(
-                        activity = this,
-                        onAuthSuccess = {
-                            // Navigate to the HomeScreen after successful authentication
-                            isAuthenticated.value = true
-                        },
-                        onGoogleAuth = { startGoogleSignIn() },
-                    )
-                    if (isAuthenticated.value) {
-                        Greeting(name = "Authenticated User")
-                    } else {
-                        Text(text = "Unauthenticated User", style = TextStyle(fontSize = 30.sp))
-                    }
-                }
-            }
-        }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        val currentUser = auth.currentUser
-        if (currentUser != null) {
-            reload()
-        }
-    }
-
-    @Deprecated("This method is deprecated")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQ_ONE_TAP) {
-            try {
-                val credential = oneTapClient.getSignInCredentialFromIntent(data)
+    private val oneTapSignInLauncher = registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
+    ){
+        if(it.resultCode == RESULT_OK){
+            try{
+                val credential = oneTapClient.getSignInCredentialFromIntent(it.data)
                 val idToken = credential.googleIdToken
-                if (idToken != null) {
+                if(idToken != null){
                     val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
                     auth.signInWithCredential(firebaseCredential)
                         .addOnCompleteListener(this) { task ->
@@ -127,12 +93,55 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        auth = FirebaseAuth.getInstance()  // Initialize the firebase authentication instance
+        // initialize the one tap client
+        oneTapClient = Identity.getSignInClient(this)
+        signInRequest = BeginSignInRequest.builder().setGoogleIdTokenRequestOptions(
+                BeginSignInRequest.GoogleIdTokenRequestOptions.builder().setSupported(true)
+                    .setServerClientId(getString(R.string.default_web_client_id))
+                    .setFilterByAuthorizedAccounts(false).build()
+            ).build()
+
+        setContent {
+            MentalHealthCompanionTheme {
+                val isAuthenticated = remember { mutableStateOf(false) }
+                // A surface container using the 'background' color from the theme
+                Surface(
+                    modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
+                ) {
+                    LoginScreen(
+                        activity = this,
+                        onAuthSuccess = { isAuthenticated.value = true },
+                        onGoogleAuth = {
+                            startGoogleSignIn()
+                            isAuthenticated.value = true
+                        }
+                    )
+                    if (isAuthenticated.value) {
+                        Text(text = "Authenticated User", style = TextStyle(fontSize = 30.sp))
+                    } else {
+                        Text(text = "Unauthenticated User", style = TextStyle(fontSize = 30.sp))
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val currentUser = auth.currentUser
+        if (currentUser != null) {
+            reload()
+        }
+    }
 
     private fun startGoogleSignIn() {
         oneTapClient.beginSignIn(signInRequest).addOnSuccessListener(this) { result ->
                 try {
-                    startIntentSenderForResult(
-                        result.pendingIntent.intentSender, REQ_ONE_TAP, null, 0, 0, 0, null
+                    oneTapSignInLauncher.launch(
+                        IntentSenderRequest.Builder(result.pendingIntent.intentSender).build()
                     )
                 } catch (e: IntentSender.SendIntentException) {
                     Log.e(TAG, "Failed to launch sign-in IntentSender: ${e.localizedMessage}", e)
@@ -162,16 +171,44 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!", modifier = modifier.size(30.dp)
-    )
+fun LoginScreen(
+    activity: Activity?,
+    onAuthSuccess: () -> Unit,
+    onGoogleAuth: () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ){
+            Image(
+                painter = painterResource(id = R.drawable.logo),
+                contentDescription = "E-motionAI logo",
+                modifier = Modifier.size(250.dp).padding(bottom = 0.dp)
+            )
+            AuthScreen(
+                activity = activity,
+                onAuthSuccess = onAuthSuccess,
+                onGoogleAuth = onGoogleAuth,
+            )
+        }
+    }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+fun QuickPreview() {
     MentalHealthCompanionTheme {
-        Greeting("Android")
+        LoginScreen(
+            activity = null,
+            onAuthSuccess = {},
+            onGoogleAuth = {}
+        )
     }
 }
