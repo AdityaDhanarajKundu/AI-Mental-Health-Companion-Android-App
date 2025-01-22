@@ -20,7 +20,6 @@ import com.example.mentalhealthcompanion.R
 
 @Composable
 fun GoogleAuthUI(
-    onSignInSuccess: () -> Unit,
     onError: (String) -> Unit,
     onGoogleSignIn: () -> Unit
 ) {

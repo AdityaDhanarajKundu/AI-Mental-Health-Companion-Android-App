@@ -83,13 +83,13 @@ fun SignUpUI(
             onValueChange = { confirmPassword = it },
             label = { Text(text = "Confirm Password") },
             trailingIcon = {
-                IconButton(onClick = {passwordVisible = !passwordVisible}) {
-                    Icon(imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                        contentDescription = if (passwordVisible) "Hide Password" else "Show Password"
+                IconButton(onClick = {confirmPasswordVisible = !confirmPasswordVisible}) {
+                    Icon(imageVector = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                        contentDescription = if (confirmPasswordVisible) "Hide Password" else "Show Password"
                     )
                 }
             },
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
