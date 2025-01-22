@@ -72,26 +72,27 @@ class MainActivity : ComponentActivity() {
                 val isAuthenticated = remember { mutableStateOf(false) }
                 val navController = rememberNavController()
 
+                val viewModel = viewModel<AuthViewModel>()
+                val state by viewModel.state.collectAsStateWithLifecycle()
+                val launcher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.StartIntentSenderForResult(),
+                    onResult = {
+                        if (it.resultCode == RESULT_OK) {
+                            lifecycleScope.launch {
+                                val signInResult = googleSignInClient.signInWithIntent(
+                                    intent = it.data ?: return@launch
+                                )
+                                viewModel.onSignInResult(signInResult)
+                            }
+                        }
+                    }
+                )
                 NavHost(
                     navController = navController,
                     startDestination = if (isAuthenticated.value) "home" else "login",
                 ) {
                     composable("login") {
-                        val viewModel = viewModel<AuthViewModel>()
-                        val state by viewModel.state.collectAsStateWithLifecycle()
-                        val launcher = rememberLauncherForActivityResult(
-                            contract = ActivityResultContracts.StartIntentSenderForResult(),
-                            onResult = {
-                                if (it.resultCode == RESULT_OK) {
-                                    lifecycleScope.launch {
-                                        val signInResult = googleSignInClient.signInWithIntent(
-                                            intent = it.data ?: return@launch
-                                        )
-                                        viewModel.onSignInResult(signInResult)
-                                    }
-                                }
-                            }
-                        )
+
                         LaunchedEffect(key1 = state.isSignInSuccessful) {
                             if (state.isSignInSuccessful) {
                                 isAuthenticated.value = true
@@ -101,7 +102,6 @@ class MainActivity : ComponentActivity() {
                                     Toast.LENGTH_LONG
                                 ).show()
                                 navController.navigate("home")
-                                viewModel.resetState()
                             }
                         }
                         LoginScreen(
@@ -131,7 +131,10 @@ class MainActivity : ComponentActivity() {
                             onSignOut = {
                                 isAuthenticated.value = false
                                 FirebaseAuth.getInstance().signOut()
-                                navController.navigate("login")
+                                viewModel.resetState()
+                                navController.navigate("login"){
+                                    popUpTo("home") { inclusive = true } // Clear back stack
+                                }
                             }
                         )
                     }
