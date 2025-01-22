@@ -3,17 +3,23 @@ package com.example.mentalhealthcompanion.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckBox
+import androidx.compose.material.icons.filled.Grade
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -21,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,10 +45,24 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.mentalhealthcompanion.MainActivity
 import com.example.mentalhealthcompanion.R
+import com.example.mentalhealthcompanion.service.Quote
+import com.example.mentalhealthcompanion.utils.Constants.tips
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}) {
+    val quote = remember { mutableStateOf<Quote?>(null) }
+    LaunchedEffect(Unit) {
+        try {
+            val result = Quote.RetrofitInstance.api.getRandomQuote()
+            println(result)
+            if (result.isNotEmpty()) {
+                quote.value = result[0]
+            }
+        }catch (e: Exception){
+            e.printStackTrace()
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -112,37 +133,53 @@ fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}) {
             Spacer(modifier = Modifier.height(24.dp))
 
             // Quick Tips Section
-            Text(
-                text = "Quick Tips",
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            Text(
-                text = "- Take a 5-minute deep breathing session.\n" +
-                        "- Write down one thing you're grateful for.\n" +
-                        "- Stretch or move your body for a few minutes.",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ){
+                Text(
+                    text = "Quick Tips",
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(imageVector = Icons.Filled.CheckBox, contentDescription = "tips")
+            }
+            val randomTips = remember {tips.shuffled().take(3)}
+            randomTips.forEach{
+                Text(
+                    text = "- $it",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = 16.sp,
+                    modifier = Modifier.padding(bottom = 0.dp),
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            Spacer(modifier = Modifier.height(5.dp))
 
             // Motivational Quote Section
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ){
+                Text(
+                    text = "Quote of the Day",
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(imageVector = Icons.Filled.Grade, contentDescription = "quote")
+            }
             Text(
-                text = "Quote of the Day",
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            Text(
-                text = "\"You don't have to control your thoughts. You just have to stop letting them control you.\"",
+                text = "\"${quote.value?.q ?: "Fetching quote..."}\"",
                 style = MaterialTheme.typography.bodyMedium,
                 fontSize = 16.sp,
                 modifier = Modifier.padding(bottom = 16.dp),
                 color = MaterialTheme.colorScheme.primary
             )
             Text(
-                text = "- Dan Millman",
+                text = "- ${quote.value?.a ?: ""}",
                 style = MaterialTheme.typography.bodyMedium,
                 fontSize = 16.sp,
-                modifier = Modifier.padding(bottom = 16.dp, top = 0.dp, start = 60.dp),
+                modifier = Modifier.padding(bottom = 16.dp, top = 0.dp, start = 260.dp),
                 color = MaterialTheme.colorScheme.primary
             )
 
@@ -151,7 +188,7 @@ fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}) {
 
             Text(
                 text = "Daily Check-In",
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             OutlinedTextField(
@@ -178,6 +215,7 @@ fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}) {
                 text = AnnotatedString("Sign Out"),
                 onClick = {
                     // Handle sign-out logic
+                          onSignOut()
                 },
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
@@ -188,5 +226,5 @@ fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}) {
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview(){
-    HomeScreen(navController = NavController(MainActivity()))
+    HomeScreen(navController = NavController(MainActivity()), onSignOut = {})
 }
