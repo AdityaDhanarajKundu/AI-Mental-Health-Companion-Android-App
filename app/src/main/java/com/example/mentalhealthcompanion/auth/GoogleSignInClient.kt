@@ -45,6 +45,7 @@ class GoogleSignInClient(
         UserData(
             userId = uid,
             username = displayName,
+            email = email,
             profilePictureUrl = photoUrl.toString()
         )
     }
@@ -59,6 +60,7 @@ class GoogleSignInClient(
                 data = UserData(
                     userId = user?.uid,
                     username = user?.displayName,
+                    email = user?.email,
                     profilePictureUrl = user?.photoUrl.toString()
                 ),
                 errorMessage = null
