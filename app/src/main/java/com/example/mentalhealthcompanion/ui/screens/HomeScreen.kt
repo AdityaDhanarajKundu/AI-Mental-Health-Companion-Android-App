@@ -11,15 +11,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.Grade
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -71,6 +75,16 @@ fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}) {
                     titleContentColor = Color.White
                 ),
                 title = { Text(text = "E-MotionAI")},
+                actions = {
+                    IconButton(onClick = {navController.navigate("profile")}) {
+                        Icon(
+                            imageVector = Icons.Filled.AccountCircle,
+                            contentDescription = "Profile",
+                            tint = Color.White,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                }
             )
         },
         bottomBar = {
@@ -211,14 +225,22 @@ fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}) {
             Spacer(modifier = Modifier.height(24.dp))
 
             // Sign Out Option
-            ClickableText(
-                text = AnnotatedString("Sign Out"),
+            Button(
                 onClick = {
-                    // Handle sign-out logic
-                          onSignOut()
+                    onSignOut()
                 },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .width(200.dp)
+                    .padding(8.dp),
+                shape = RoundedCornerShape(6.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Red,
+                    contentColor = Color.White
+                ),
+            ) {
+                Text("Sign Out")
+            }
         }
     }
 }
