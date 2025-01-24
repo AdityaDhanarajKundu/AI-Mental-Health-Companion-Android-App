@@ -39,6 +39,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -84,15 +85,15 @@ fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}) {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = Color.White
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
                 ),
-                title = { Text(text = "E-MotionAI")},
+                title = { Text(text = "E-MotionAI", style = MaterialTheme.typography.titleLarge)},
                 actions = {
                     IconButton(onClick = {navController.navigate("profile")}) {
                         Icon(
                             imageVector = Icons.Filled.AccountCircle,
                             contentDescription = "Profile",
-                            tint = Color.White,
+                            tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.fillMaxSize()
                         )
                     }
@@ -102,13 +103,14 @@ fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}) {
         bottomBar = {
             BottomAppBar(
                 containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = Color.White
+                contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
                 Text(
                     modifier = Modifier
                         .fillMaxWidth(),
                     textAlign = TextAlign.Center,
                     text = "Made with ❤️ by Aditya Dhanaraj Kundu",
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
         }
@@ -132,26 +134,42 @@ fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
+                    .clip(RoundedCornerShape(12.dp))
                     .padding(bottom = 16.dp)
             )
             // Navigation Buttons
             Button(
                 onClick = { navController.navigate("journal_screen") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
             ) {
                 Text("Journal Your Thoughts")
             }
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = { navController.navigate("meditation_screen") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = MaterialTheme.colorScheme.onSecondary
+                )
             ) {
                 Text("Guided Meditation")
             }
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = { navController.navigate("mood_analysis_screen") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.tertiary,
+                    contentColor = MaterialTheme.colorScheme.onTertiary
+                )
             ) {
                 Text("Mood Analysis")
             }
@@ -177,7 +195,7 @@ fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}) {
                     style = MaterialTheme.typography.bodyMedium,
                     fontSize = 16.sp,
                     modifier = Modifier.padding(bottom = 0.dp),
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.tertiary
                 )
             }
             Spacer(modifier = Modifier.height(5.dp))
@@ -199,14 +217,14 @@ fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}) {
                 style = MaterialTheme.typography.bodyMedium,
                 fontSize = 16.sp,
                 modifier = Modifier.padding(bottom = 16.dp),
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.tertiary
             )
             Text(
                 text = "- ${quote.value?.a ?: ""}",
                 style = MaterialTheme.typography.bodyMedium,
                 fontSize = 16.sp,
                 modifier = Modifier.padding(bottom = 16.dp, top = 0.dp, start = 260.dp),
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.tertiary
             )
 
             // Daily Check-In Section
@@ -215,6 +233,7 @@ fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}) {
             Text(
                 text = "Daily Check-In",
                 style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             OutlinedTextField(
@@ -233,7 +252,8 @@ fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}) {
                         feeling = true
                     }
                 },
-                modifier = Modifier.align(Alignment.End)
+                modifier = Modifier.align(Alignment.End),
+                shape = RoundedCornerShape(8.dp)
             ) {
                 Text("Submit")
             }
