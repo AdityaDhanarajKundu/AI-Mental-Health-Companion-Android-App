@@ -1,5 +1,6 @@
 package com.example.mentalhealthcompanion.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -40,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -51,11 +53,15 @@ import com.example.mentalhealthcompanion.MainActivity
 import com.example.mentalhealthcompanion.R
 import com.example.mentalhealthcompanion.service.Quote
 import com.example.mentalhealthcompanion.utils.Constants.tips
+import com.example.mentalhealthcompanion.viewmodel.JournalViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}) {
     val quote = remember { mutableStateOf<Quote?>(null) }
+    val viewModel = JournalViewModel()
+    var feeling by remember { mutableStateOf(false) }
+    val context = LocalContext.current
     LaunchedEffect(Unit) {
         try {
             val result = Quote.RetrofitInstance.api.getRandomQuote()
@@ -65,6 +71,12 @@ fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}) {
             }
         }catch (e: Exception){
             e.printStackTrace()
+        }
+    }
+    LaunchedEffect(key1 = feeling) {
+        if (feeling){
+            Toast.makeText(context, "Feeling saved successfully!", Toast.LENGTH_SHORT).show()
+            feeling = false
         }
     }
     Scaffold(
@@ -215,7 +227,11 @@ fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}) {
             )
             Button(
                 onClick = {
-                    // Handle submission of daily check-in
+                    if (dailyCheckIn.isNotEmpty()){
+                        viewModel.saveCheckIn(dailyCheckIn)
+                        dailyCheckIn = ""
+                        feeling = true
+                    }
                 },
                 modifier = Modifier.align(Alignment.End)
             ) {
