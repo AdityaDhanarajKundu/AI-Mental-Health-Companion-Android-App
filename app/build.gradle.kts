@@ -1,8 +1,10 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.compose.compiler)
     id("com.google.gms.google-services")
     id("androidx.navigation.safeargs.kotlin")
+    id("com.google.devtools.ksp")
     kotlin("plugin.serialization") version "2.0.21"
 }
 
@@ -55,6 +57,10 @@ android {
 dependencies {
 
     val nav_version = "2.8.5"
+    val room_version = "2.6.1"
+    implementation("androidx.room:room-runtime:$room_version")
+    ksp("androidx.room:room-compiler:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
     // Jetpack Compose integration
     implementation("androidx.navigation:navigation-compose:$nav_version")
     // Views/Fragments integration
