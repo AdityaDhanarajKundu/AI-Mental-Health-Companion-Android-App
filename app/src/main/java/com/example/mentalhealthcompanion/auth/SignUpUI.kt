@@ -24,12 +24,14 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.userProfileChangeRequest
 
 @Composable
 fun SignUpUI(
     onSignUpSuccess: () -> Unit, onError: (String) -> Unit
 ) {
     var email by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -55,36 +57,47 @@ fun SignUpUI(
         }
 
         OutlinedTextField(
+            value = username,
+            onValueChange = { username = it },
+            label = { Text(text = "Username") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 2.dp)
+        )
+
+        OutlinedTextField(
             value = email,
             onValueChange = { email = it },
             label = { Text(text = "Email") },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(horizontal = 16.dp, vertical = 2.dp)
         )
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
             label = { Text(text = "Password") },
             trailingIcon = {
-                IconButton(onClick = {passwordVisible = !passwordVisible}) {
-                    Icon(imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(
+                        imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
                         contentDescription = if (passwordVisible) "Hide Password" else "Show Password"
                     )
-                }           
+                }
             },
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(horizontal = 16.dp, vertical = 2.dp)
         )
         OutlinedTextField(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
             label = { Text(text = "Confirm Password") },
             trailingIcon = {
-                IconButton(onClick = {confirmPasswordVisible = !confirmPasswordVisible}) {
-                    Icon(imageVector = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                    Icon(
+                        imageVector = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
                         contentDescription = if (confirmPasswordVisible) "Hide Password" else "Show Password"
                     )
                 }
@@ -92,24 +105,39 @@ fun SignUpUI(
             visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(horizontal = 16.dp, vertical = 2.dp)
         )
-        Button(onClick = {
-            if (password != confirmPassword) {
-                onError("Passwords do not match!")
-                return@Button
-            }
-
-            FirebaseAuth.getInstance()
-                .createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        successMessage = "Sign up successful!"
-                    } else {
-                        onError(task.exception?.message ?: "An unknown error occurred")
-                    }
+        Button(
+            onClick = {
+                if (password != confirmPassword) {
+                    onError("Passwords do not match!")
+                    return@Button
                 }
-        }) {
+
+                FirebaseAuth.getInstance()
+                    .createUserWithEmailAndPassword(email, password)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            val user = FirebaseAuth.getInstance().currentUser
+                            user?.let {
+                                // Optionally update the user's profile name
+                                it.updateProfile(userProfileChangeRequest {
+                                    displayName = username
+                                }).addOnCompleteListener {
+                                    if (it.isSuccessful) {
+                                        successMessage = "Sign up successful! Welcome, $username!"
+                                    } else {
+                                        onError(it.exception?.message ?: "Failed to update profile")
+                                    }
+                                }
+                            }
+                        } else {
+                            onError(task.exception?.message ?: "An unknown error occurred")
+                        }
+                    }
+            },
+            modifier = Modifier.padding(top = 5.dp)
+        ) {
             Text(text = "Sign Up")
         }
     }
