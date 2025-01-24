@@ -43,9 +43,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.room.Room
 import com.example.mentalhealthcompanion.auth.AuthScreen
 import com.example.mentalhealthcompanion.auth.GoogleSignInClient
 import com.example.mentalhealthcompanion.auth.SignInState
+import com.example.mentalhealthcompanion.db.JournalDb
 import com.example.mentalhealthcompanion.ui.screens.HomeScreen
 import com.example.mentalhealthcompanion.ui.theme.MentalHealthCompanionTheme
 import com.example.mentalhealthcompanion.viewmodel.AuthViewModel
@@ -64,8 +66,18 @@ class MainActivity : ComponentActivity() {
             oneTapClient = Identity.getSignInClient(applicationContext)
         )
     }
+    companion object{
+        lateinit var database : JournalDb
+            private set
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        database = Room.databaseBuilder(
+            applicationContext,
+            JournalDb::class.java,
+            "journal_db",
+        ).fallbackToDestructiveMigration()
+            .build()
 
         setContent {
             MentalHealthCompanionTheme {
