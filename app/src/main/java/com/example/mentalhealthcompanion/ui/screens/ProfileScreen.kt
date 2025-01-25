@@ -126,7 +126,7 @@ fun ProfileScreen(
                 shape = CircleShape,
                 shadowElevation = 8.dp,
                 border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
-                modifier = Modifier.size(140.dp)
+                modifier = Modifier.size(140.dp).padding(12.dp)
             ) {
                 if(userData?.profilePictureUrl != null){
                     AsyncImage(

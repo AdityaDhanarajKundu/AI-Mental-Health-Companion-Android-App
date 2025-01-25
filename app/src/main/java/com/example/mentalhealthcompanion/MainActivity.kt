@@ -86,7 +86,7 @@ class MainActivity : ComponentActivity() {
                 val isAuthenticated = remember { mutableStateOf(false) }
                 val navController = rememberNavController()
 
-                val viewModel = viewModel<AuthViewModel>()
+                val viewModel = authViewModel
                 val state by viewModel.state.collectAsStateWithLifecycle()
                 val launcher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.StartIntentSenderForResult(),
@@ -97,6 +97,9 @@ class MainActivity : ComponentActivity() {
                                     intent = it.data ?: return@launch
                                 )
                                 viewModel.onSignInResult(signInResult)
+                                if (signInResult.data != null) {
+                                    viewModel.updateUserData(signInResult.data)
+                                }
                             }
                         }
                     }
