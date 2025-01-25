@@ -66,6 +66,7 @@ class MainActivity : ComponentActivity() {
             oneTapClient = Identity.getSignInClient(applicationContext)
         )
     }
+    private val authViewModel = AuthViewModel()
     companion object{
         lateinit var database : JournalDb
             private set
@@ -134,7 +135,8 @@ class MainActivity : ComponentActivity() {
                                         ).build()
                                     )
                                 }
-                            }
+                            },
+                            authViewModel = authViewModel
                         )
                     }
                     composable("home") {
@@ -147,7 +149,8 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate("login"){
                                     popUpTo("home") { inclusive = true } // Clear back stack
                                 }
-                            }
+                            },
+                            authViewModel = authViewModel
                         )
                     }
                 }
@@ -161,7 +164,8 @@ fun LoginScreen(
     state: SignInState,
     activity: Activity?,
     onAuthSuccess: () -> Unit,
-    onGoogleAuth: () -> Unit
+    onGoogleAuth: () -> Unit,
+    authViewModel: AuthViewModel
 ) {
     Box(
         modifier = Modifier
@@ -211,6 +215,7 @@ fun LoginScreen(
                         activity = activity,
                         onAuthSuccess = onAuthSuccess,
                         onGoogleAuth = onGoogleAuth,
+                        authViewModel = authViewModel
                     )
                 }
             }
@@ -226,7 +231,8 @@ fun QuickPreview() {
             state = SignInState(),
             activity = null,
             onAuthSuccess = {},
-            onGoogleAuth = {}
+            onGoogleAuth = {},
+            authViewModel = AuthViewModel()
         )
     }
 }

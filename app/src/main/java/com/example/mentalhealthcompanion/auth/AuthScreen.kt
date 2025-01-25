@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.mentalhealthcompanion.viewmodel.AuthViewModel
 
 @Composable
 fun AuthScreen(
@@ -42,6 +43,7 @@ fun AuthScreen(
     activity: Activity?,
     onAuthSuccess:  () -> Unit,
     onGoogleAuth: () -> Unit,
+    authViewModel: AuthViewModel
 ) {
     var authState by remember {
         mutableStateOf<AuthState>(AuthState.Unauthenticated)
@@ -72,6 +74,9 @@ fun AuthScreen(
                     },
                     onError = {
                         authState = AuthState.Error(it)
+                    },
+                    onUserDataRetrieved = {userData ->
+                        authViewModel.updateUserData(userData)
                     }
                 )
             }
@@ -82,7 +87,8 @@ fun AuthScreen(
                     },
                     onError = {
                         authState = AuthState.Error(it)
-                    }
+                    },
+                    authViewModel = authViewModel
                 )
             }
             else ->{

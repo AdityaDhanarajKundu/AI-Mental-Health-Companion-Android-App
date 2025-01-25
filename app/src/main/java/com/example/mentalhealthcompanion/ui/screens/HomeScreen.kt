@@ -33,6 +33,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,15 +55,18 @@ import com.example.mentalhealthcompanion.MainActivity
 import com.example.mentalhealthcompanion.R
 import com.example.mentalhealthcompanion.service.Quote
 import com.example.mentalhealthcompanion.utils.Constants.tips
+import com.example.mentalhealthcompanion.viewmodel.AuthViewModel
 import com.example.mentalhealthcompanion.viewmodel.JournalViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}) {
+fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}, authViewModel: AuthViewModel) {
     val quote = remember { mutableStateOf<Quote?>(null) }
     val viewModel = JournalViewModel()
     var feeling by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val userData by authViewModel.userData.collectAsState()
+
     LaunchedEffect(Unit) {
         try {
             val result = Quote.RetrofitInstance.api.getRandomQuote()
@@ -124,7 +128,7 @@ fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}) {
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
-            Text(text = "Welcome Back to E-MotionAI", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(bottom = 8.dp))
+            Text(text = "Welcome ${userData?.username ?: userData?.email ?: ""}, to E-MotionAI", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(bottom = 8.dp))
             Text(text = "Take a moment for yourself today and choose what feels right for you.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(bottom = 16.dp))
             //Welcome Image
             Image(
@@ -284,5 +288,5 @@ fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}) {
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview(){
-    HomeScreen(navController = NavController(MainActivity()), onSignOut = {})
+    HomeScreen(navController = NavController(MainActivity()), onSignOut = {}, authViewModel = AuthViewModel())
 }

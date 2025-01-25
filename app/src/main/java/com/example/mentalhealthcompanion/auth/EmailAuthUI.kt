@@ -15,11 +15,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 
 @Composable
 fun EmailAuthUI(
     onSignInSuccess:  () -> Unit,
-    onError: (String) -> Unit
+    onError: (String) -> Unit,
+    onUserDataRetrieved: (UserData) -> Unit
 ) {
     var email by remember {
         mutableStateOf("")
@@ -53,7 +55,18 @@ fun EmailAuthUI(
             FirebaseAuth.getInstance()
                 .signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener {
-                    onSignInSuccess()
+                    val user = FirebaseAuth.getInstance().currentUser
+                    user?.let {
+                        onUserDataRetrieved(
+                            UserData(
+                                userId = it.uid,
+                                username = it.displayName,
+                                email = it.email,
+                                profilePictureUrl = it.photoUrl?.toString()
+                            )
+                        )
+                        onSignInSuccess()
+                    }
                 }
                 .addOnFailureListener {
                     onError(it.message ?: "An error occurred!")

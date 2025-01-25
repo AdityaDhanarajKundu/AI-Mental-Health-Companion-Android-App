@@ -23,12 +23,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.mentalhealthcompanion.viewmodel.AuthViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.userProfileChangeRequest
 
 @Composable
 fun SignUpUI(
-    onSignUpSuccess: () -> Unit, onError: (String) -> Unit
+    onSignUpSuccess: () -> Unit,
+    onError: (String) -> Unit,
+    authViewModel: AuthViewModel
 ) {
     var email by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
@@ -120,6 +123,12 @@ fun SignUpUI(
                         if (task.isSuccessful) {
                             val user = FirebaseAuth.getInstance().currentUser
                             user?.let {
+                                val userData = UserData(
+                                    userId = it.uid,
+                                    username = username,
+                                    email = it.email,
+                                )
+                                authViewModel.updateUserData(userData)
                                 // Optionally update the user's profile name
                                 it.updateProfile(userProfileChangeRequest {
                                     displayName = username
