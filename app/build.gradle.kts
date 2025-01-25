@@ -70,6 +70,8 @@ dependencies {
     implementation("androidx.navigation:navigation-dynamic-features-fragment:$nav_version")
     // Testing Navigation
     androidTestImplementation("androidx.navigation:navigation-testing:$nav_version")
+    implementation("io.coil-kt.coil3:coil-compose:3.0.4")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.4")
     // JSON serialization library, works with the Kotlin serialization plugin
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
