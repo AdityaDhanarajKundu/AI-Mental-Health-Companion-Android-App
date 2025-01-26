@@ -1,5 +1,6 @@
 package com.example.mentalhealthcompanion.ui.screens
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -67,6 +68,13 @@ fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}, authVi
     val context = LocalContext.current
     val userData by authViewModel.userData.collectAsState()
 
+    LaunchedEffect(Unit) {
+        authViewModel.fetchUserDataFromFirestore { isSuccess ->
+            if (!isSuccess) {
+                Log.e("AuthViewModel", "Failed to fetch user data from Firestore")
+            }
+        }
+    }
     LaunchedEffect(Unit) {
         try {
             val result = Quote.RetrofitInstance.api.getRandomQuote()
