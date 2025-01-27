@@ -151,7 +151,7 @@ fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}, authVi
             )
             // Navigation Buttons
             Button(
-                onClick = { navController.navigate("journal_screen") },
+                onClick = { navController.navigate("journal") },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(

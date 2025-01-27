@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.mentalhealthcompanion.MainActivity
 import com.example.mentalhealthcompanion.db.DailyCheckIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -24,6 +25,12 @@ class JournalViewModel : ViewModel() {
             } catch (e: Exception) {
                 Log.e("JournalViewModel", "Error inserting check-in", e)
             }
+        }
+    }
+
+    fun getAllCheckIns() : List<DailyCheckIn>{
+        return runBlocking {
+            dao.getAllCheckIns()
         }
     }
 }

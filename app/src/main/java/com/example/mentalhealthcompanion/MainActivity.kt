@@ -49,6 +49,7 @@ import com.example.mentalhealthcompanion.auth.GoogleSignInClient
 import com.example.mentalhealthcompanion.auth.SignInState
 import com.example.mentalhealthcompanion.db.JournalDb
 import com.example.mentalhealthcompanion.ui.screens.HomeScreen
+import com.example.mentalhealthcompanion.ui.screens.JournalScreen
 import com.example.mentalhealthcompanion.ui.screens.ProfileScreen
 import com.example.mentalhealthcompanion.ui.theme.MentalHealthCompanionTheme
 import com.example.mentalhealthcompanion.viewmodel.AuthViewModel
@@ -155,6 +156,19 @@ class MainActivity : ComponentActivity() {
                                 }
                             },
                             authViewModel = authViewModel
+                        )
+                    }
+                    composable("journal") {
+                        JournalScreen(
+                            navController = navController,
+                            onSignOut = {
+                                isAuthenticated.value = false
+                                FirebaseAuth.getInstance().signOut()
+                                viewModel.resetState()
+                                navController.navigate("login"){
+                                    popUpTo("home") { inclusive = true } // Clear back stack
+                                }
+                            }
                         )
                     }
                     composable("profile") {
