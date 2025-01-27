@@ -17,10 +17,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Today
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -35,6 +37,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,6 +48,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -57,13 +61,17 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun JournalScreen(journalViewModel: JournalViewModel = JournalViewModel(), navController: NavController, onSignOut : () -> Unit ) {
+fun JournalScreen(
+    journalViewModel: JournalViewModel = JournalViewModel(),
+    navController: NavController,
+    onSignOut: () -> Unit
+) {
     val scope = rememberCoroutineScope()
     var journalEntries by remember { mutableStateOf<List<DailyCheckIn>>(emptyList()) }
     var isRefreshing by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        loadJournalEntries(journalViewModel, onEntriesLoaded = {journalEntries = it})
+        loadJournalEntries(journalViewModel, onEntriesLoaded = { journalEntries = it })
     }
     Scaffold(
         topBar = {
@@ -80,14 +88,18 @@ fun JournalScreen(journalViewModel: JournalViewModel = JournalViewModel(), navCo
                         onClick = {
                             isRefreshing = true
                             scope.launch {
-                                loadJournalEntries(journalViewModel){
+                                loadJournalEntries(journalViewModel) {
                                     journalEntries = it
                                     isRefreshing = false
                                 }
                             }
                         }
                     ) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh", tint = MaterialTheme.colorScheme.onPrimary)
+                        Icon(
+                            Icons.Default.Refresh,
+                            contentDescription = "Refresh",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
                 },
                 navigationIcon = {
@@ -136,22 +148,30 @@ fun JournalScreen(journalViewModel: JournalViewModel = JournalViewModel(), navCo
                     color = MaterialTheme.colorScheme.secondary
                 )
             }
-            Box(modifier = Modifier.weight(1f)){
-                if (journalEntries.isEmpty()){
+            Box(modifier = Modifier.weight(1f)) {
+                if (journalEntries.isEmpty()) {
                     Text(
                         text = "No journal entries yet! Your reflections will appear here.",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.align(Alignment.Center)
                     )
-                }else{
-                    LazyColumn (
+                } else {
+                    LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ){
+                    ) {
                         items(journalEntries.size) { index ->
                             val entry = journalEntries[index]
-                            JournalEntryCard(entry)
+                            JournalEntryCard(
+                                entry = entry,
+                                onDelete = {deletedEntry ->
+                                    scope.launch {
+                                        journalViewModel.deleteCheckIn(deletedEntry)
+                                        journalEntries = journalEntries.filter { it != deletedEntry }
+                                    }
+                                }
+                            )
                         }
                     }
                 }
@@ -179,9 +199,10 @@ fun JournalScreen(journalViewModel: JournalViewModel = JournalViewModel(), navCo
 }
 
 @Composable
-fun JournalEntryCard(entry: DailyCheckIn){
+fun JournalEntryCard(entry: DailyCheckIn, onDelete: (DailyCheckIn) -> Unit) {
     var isEditing by remember { mutableStateOf(false) }
     var updatedFeeling by remember { mutableStateOf(entry.feeling) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -203,6 +224,14 @@ fun JournalEntryCard(entry: DailyCheckIn){
                     fontWeight = FontWeight.Bold
                 )
             )
+            Spacer(modifier = Modifier.weight(1f))
+            IconButton(onClick = { showDeleteDialog = true }) {
+                Icon(
+                    Icons.Filled.Delete,
+                    contentDescription = "Delete Entry",
+                    tint = Color.Red
+                )
+            }
         }
 
         if (isEditing) {
@@ -239,15 +268,50 @@ fun JournalEntryCard(entry: DailyCheckIn){
             }
         }
     }
+    if(showDeleteDialog){
+        ConfirmDeleteDialog(
+            onConfirm = {
+                showDeleteDialog = false
+                onDelete(entry)
+            },
+            onDismiss = {
+                showDeleteDialog = false
+            }
+        )
+    }
+}
+
+@Composable
+fun ConfirmDeleteDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        title = {
+            Text(text = "Delete Entry")
+        },
+        text = { Text("Are you sure you want to delete this journal entry?") },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text("Delete")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }
 
 private suspend fun loadJournalEntries(
     journalViewModel: JournalViewModel,
-    onEntriesLoaded : (List<DailyCheckIn>) -> Unit
-){
-    val entries = try{
+    onEntriesLoaded: (List<DailyCheckIn>) -> Unit
+) {
+    val entries = try {
         journalViewModel.getAllCheckIns()
-    }catch (e: Exception){
+    } catch (e: Exception) {
         emptyList()
     }
     onEntriesLoaded(entries)
@@ -256,5 +320,8 @@ private suspend fun loadJournalEntries(
 @Preview(showBackground = true)
 @Composable
 fun JournalScreenPreview() {
-    JournalScreen( journalViewModel = JournalViewModel(),navController = NavController(MainActivity()), onSignOut = {})
+    JournalScreen(
+        journalViewModel = JournalViewModel(),
+        navController = NavController(MainActivity()),
+        onSignOut = {})
 }

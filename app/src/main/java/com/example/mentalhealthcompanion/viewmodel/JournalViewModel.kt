@@ -33,4 +33,14 @@ class JournalViewModel : ViewModel() {
             dao.getAllCheckIns()
         }
     }
+
+    fun deleteCheckIn(entry : DailyCheckIn){
+        viewModelScope.launch {
+            try {
+                dao.deleteCheckIn(entry)
+            }catch (e: Exception){
+                Log.e("JournalViewModel", "Error deleting check-in", e)
+            }
+        }
+    }
 }

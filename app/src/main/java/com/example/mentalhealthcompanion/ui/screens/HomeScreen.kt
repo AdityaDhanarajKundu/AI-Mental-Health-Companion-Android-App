@@ -159,11 +159,11 @@ fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}, authVi
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 )
             ) {
-                Text("Journal Your Thoughts")
+                Text("Daily Check In Journal")
             }
             Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = { navController.navigate("meditation_screen") },
+                onClick = { navController.navigate("meditation") },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -175,7 +175,7 @@ fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}, authVi
             }
             Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = { navController.navigate("mood_analysis_screen") },
+                onClick = { navController.navigate("mood") },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
