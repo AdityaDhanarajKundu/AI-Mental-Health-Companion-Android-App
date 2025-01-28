@@ -259,7 +259,7 @@ fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}, authVi
             Button(
                 onClick = {
                     if (dailyCheckIn.isNotEmpty()){
-                        viewModel.saveCheckIn(dailyCheckIn)
+                        viewModel.addCheckIn(dailyCheckIn)
                         dailyCheckIn = ""
                         feeling = true
                     }

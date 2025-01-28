@@ -67,11 +67,14 @@ fun JournalScreen(
     onSignOut: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    var journalEntries by remember { mutableStateOf<List<DailyCheckIn>>(emptyList()) }
+//    var journalEntries by remember { mutableStateOf<List<DailyCheckIn>>(emptyList()) }
     var isRefreshing by remember { mutableStateOf(false) }
+    var journalEntriesWithRecommendations by remember{ mutableStateOf<List<Pair<DailyCheckIn, String>>>(
+        emptyList()
+    ) }
 
     LaunchedEffect(Unit) {
-        loadJournalEntries(journalViewModel, onEntriesLoaded = { journalEntries = it })
+        journalEntriesWithRecommendations = loadJournalEntries(journalViewModel)
     }
     Scaffold(
         topBar = {
@@ -88,10 +91,8 @@ fun JournalScreen(
                         onClick = {
                             isRefreshing = true
                             scope.launch {
-                                loadJournalEntries(journalViewModel) {
-                                    journalEntries = it
-                                    isRefreshing = false
-                                }
+                                journalEntriesWithRecommendations = loadJournalEntries(journalViewModel) // Refresh the entries
+                                isRefreshing = false
                             }
                         }
                     ) {
@@ -149,7 +150,7 @@ fun JournalScreen(
                 )
             }
             Box(modifier = Modifier.weight(1f)) {
-                if (journalEntries.isEmpty()) {
+                if (journalEntriesWithRecommendations.isEmpty()) {
                     Text(
                         text = "No journal entries yet! Your reflections will appear here.",
                         style = MaterialTheme.typography.bodyLarge,
@@ -161,14 +162,15 @@ fun JournalScreen(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(journalEntries.size) { index ->
-                            val entry = journalEntries[index]
+                        items(journalEntriesWithRecommendations.size) { index ->
+                            val (entry, recommendation) = journalEntriesWithRecommendations[index]
                             JournalEntryCard(
                                 entry = entry,
+                                recommendation = recommendation,
                                 onDelete = {deletedEntry ->
                                     scope.launch {
                                         journalViewModel.deleteCheckIn(deletedEntry)
-                                        journalEntries = journalEntries.filter { it != deletedEntry }
+                                        journalEntriesWithRecommendations = journalEntriesWithRecommendations.filter { it.first != deletedEntry }
                                     }
                                 }
                             )
@@ -199,7 +201,7 @@ fun JournalScreen(
 }
 
 @Composable
-fun JournalEntryCard(entry: DailyCheckIn, onDelete: (DailyCheckIn) -> Unit) {
+fun JournalEntryCard(entry: DailyCheckIn, recommendation: String, onDelete: (DailyCheckIn) -> Unit) {
     var isEditing by remember { mutableStateOf(false) }
     var updatedFeeling by remember { mutableStateOf(entry.feeling) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -267,6 +269,14 @@ fun JournalEntryCard(entry: DailyCheckIn, onDelete: (DailyCheckIn) -> Unit) {
                 Icon(Icons.Filled.Edit, contentDescription = "Edit Entry")
             }
         }
+
+        if (recommendation.isNotEmpty()){
+            Text(
+                text = "Recommendation : $recommendation",
+                style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.primary),
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
     }
     if(showDeleteDialog){
         ConfirmDeleteDialog(
@@ -306,15 +316,17 @@ fun ConfirmDeleteDialog(
 }
 
 private suspend fun loadJournalEntries(
-    journalViewModel: JournalViewModel,
-    onEntriesLoaded: (List<DailyCheckIn>) -> Unit
-) {
+    journalViewModel: JournalViewModel
+) : List<Pair<DailyCheckIn, String>> {
     val entries = try {
         journalViewModel.getAllCheckIns()
     } catch (e: Exception) {
         emptyList()
     }
-    onEntriesLoaded(entries)
+    return entries.map { entry ->
+        val recommendation = journalViewModel.getRecommendation(entry.sentiment)
+        entry to recommendation
+    }
 }
 
 @Preview(showBackground = true)

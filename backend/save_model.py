@@ -71,6 +71,7 @@ training_args = TrainingArguments(
     load_best_model_at_end=True,
     logging_dir="./logs",
     logging_steps=100,
+    save_steps=500
 )
 
 # Trainer

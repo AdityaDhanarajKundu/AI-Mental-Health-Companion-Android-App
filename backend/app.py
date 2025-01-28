@@ -7,7 +7,14 @@ app = Flask(__name__)
 
 # Load the sentiment model
 sentiment_pipeline = load_sentiment_model()
+print("Model loaded successfully!")
 
+emotion_labels = [
+    "admiration", "amusement", "anger", "annoyance", "approval", "caring", "confusion", "curiosity",
+    "desire", "disappointment", "disapproval", "disgust", "embarrassment", "excitement", "fear",
+    "gratitude", "grief", "joy", "love", "nervousness", "optimism", "pride", "realization",
+    "relief", "remorse", "sadness", "surprise", "neutral"
+]
 
 @app.route("/")
 def home():
@@ -31,11 +38,19 @@ def analyze_sentiment():
         # Get sentiment predictions
         result = sentiment_pipeline(preprocessed_text)
 
+        formatted_predictions = [
+            {
+                "Emotion": emotion_labels[int(pred["label"].split("_")[1])],
+                "Score": pred["score"]
+            }
+            for pred in sorted(result[0], key= lambda x: x["score"], reverse=True)
+        ]
+
         # Format the response
         response = {
             "input": text,
             "preprocessed_input": preprocessed_text,
-            "predictions": result
+            "predictions": formatted_predictions
         }
         return jsonify(response)
 
