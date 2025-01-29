@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.mentalhealthcompanion.MainActivity
 import com.example.mentalhealthcompanion.R
+import com.example.mentalhealthcompanion.db.DailyCheckInDao
 import com.example.mentalhealthcompanion.service.Quote
 import com.example.mentalhealthcompanion.utils.Constants.tips
 import com.example.mentalhealthcompanion.viewmodel.AuthViewModel
@@ -61,9 +62,8 @@ import com.example.mentalhealthcompanion.viewmodel.JournalViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}, authViewModel: AuthViewModel) {
+fun HomeScreen(navController: NavController, viewModel: JournalViewModel, onSignOut : () -> Unit = {}, authViewModel: AuthViewModel) {
     val quote = remember { mutableStateOf<Quote?>(null) }
-    val viewModel = JournalViewModel()
     var feeling by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val userData by authViewModel.userData.collectAsState()
@@ -296,5 +296,5 @@ fun HomeScreen(navController: NavController, onSignOut : () -> Unit = {}, authVi
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview(){
-    HomeScreen(navController = NavController(MainActivity()), onSignOut = {}, authViewModel = AuthViewModel())
+    HomeScreen(navController = NavController(MainActivity()), viewModel = JournalViewModel(dao = MainActivity.database.dailyCheckInDao()), onSignOut = {}, authViewModel = AuthViewModel())
 }

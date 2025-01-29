@@ -47,12 +47,15 @@ import androidx.room.Room
 import com.example.mentalhealthcompanion.auth.AuthScreen
 import com.example.mentalhealthcompanion.auth.GoogleSignInClient
 import com.example.mentalhealthcompanion.auth.SignInState
+import com.example.mentalhealthcompanion.db.DailyCheckInDao
 import com.example.mentalhealthcompanion.db.JournalDb
 import com.example.mentalhealthcompanion.ui.screens.HomeScreen
 import com.example.mentalhealthcompanion.ui.screens.JournalScreen
 import com.example.mentalhealthcompanion.ui.screens.ProfileScreen
 import com.example.mentalhealthcompanion.ui.theme.MentalHealthCompanionTheme
 import com.example.mentalhealthcompanion.viewmodel.AuthViewModel
+import com.example.mentalhealthcompanion.viewmodel.JournalViewModel
+import com.example.mentalhealthcompanion.viewmodel.MoodViewModel
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
@@ -73,6 +76,12 @@ class MainActivity : ComponentActivity() {
         lateinit var database : JournalDb
             private set
     }
+    private val dao : DailyCheckInDao by lazy {
+        database.dailyCheckInDao()
+    }
+    private lateinit var journalViewModel: JournalViewModel
+    private lateinit var moodViewModel: MoodViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         database = Room.databaseBuilder(
@@ -82,6 +91,8 @@ class MainActivity : ComponentActivity() {
         ).fallbackToDestructiveMigration()
             .build()
 
+        journalViewModel = JournalViewModel(dao)
+        moodViewModel = MoodViewModel(dao)
         setContent {
             MentalHealthCompanionTheme {
                 val isAuthenticated = remember { mutableStateOf(false) }
@@ -147,6 +158,7 @@ class MainActivity : ComponentActivity() {
                     composable("home") {
                         HomeScreen(
                             navController = navController,
+                            viewModel = journalViewModel,
                             onSignOut = {
                                 isAuthenticated.value = false
                                 FirebaseAuth.getInstance().signOut()
@@ -161,6 +173,7 @@ class MainActivity : ComponentActivity() {
                     composable("journal") {
                         JournalScreen(
                             navController = navController,
+                            journalViewModel = journalViewModel,
                             onSignOut = {
                                 isAuthenticated.value = false
                                 FirebaseAuth.getInstance().signOut()

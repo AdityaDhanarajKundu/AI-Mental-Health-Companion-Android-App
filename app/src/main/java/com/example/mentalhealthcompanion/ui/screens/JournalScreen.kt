@@ -62,7 +62,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JournalScreen(
-    journalViewModel: JournalViewModel = JournalViewModel(),
+    journalViewModel: JournalViewModel,
     navController: NavController,
     onSignOut: () -> Unit
 ) {
@@ -333,7 +333,7 @@ private suspend fun loadJournalEntries(
 @Composable
 fun JournalScreenPreview() {
     JournalScreen(
-        journalViewModel = JournalViewModel(),
+        journalViewModel = JournalViewModel(dao = MainActivity.database.dailyCheckInDao()),
         navController = NavController(MainActivity()),
         onSignOut = {})
 }

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mentalhealthcompanion.MainActivity
 import com.example.mentalhealthcompanion.db.DailyCheckIn
+import com.example.mentalhealthcompanion.db.DailyCheckInDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -19,8 +20,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class JournalViewModel : ViewModel() {
-    private val dao = MainActivity.database.dailyCheckInDao()
+class JournalViewModel(private val dao: DailyCheckInDao) : ViewModel() {
     @SuppressLint("SimpleDateFormat")
     fun saveCheckIn(feeling : String, sentiment : String){
         val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
