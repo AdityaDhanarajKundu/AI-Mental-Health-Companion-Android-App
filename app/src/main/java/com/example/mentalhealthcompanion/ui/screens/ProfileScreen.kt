@@ -1,5 +1,6 @@
 package com.example.mentalhealthcompanion.ui.screens
 
+import android.app.Activity
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -64,6 +65,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -79,18 +81,21 @@ import com.example.mentalhealthcompanion.R
 import com.example.mentalhealthcompanion.auth.AuthState
 import com.example.mentalhealthcompanion.auth.UserData
 import com.example.mentalhealthcompanion.viewmodel.AuthViewModel
+import com.example.mentalhealthcompanion.viewmodel.MoodViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     navController: NavController,
     authViewModel: AuthViewModel,
+    moodViewModel: MoodViewModel,
     onSignOut: () -> Unit
 ) {
     val userData by authViewModel.userData.collectAsState(initial = null)
     var authState by remember { mutableStateOf<AuthState>(AuthState.Authenticated) }
     val state by authViewModel.state.collectAsState()
     val context = LocalContext.current
+    val activity = (LocalView.current.context as? Activity)
 
     LaunchedEffect(Unit) {
         authViewModel.fetchUserDataFromFirestore { isSuccess ->
@@ -257,7 +262,11 @@ fun ProfileScreen(
                                 textAlign = TextAlign.Center,
                             )
                             ActionItem("Edit Profile", Icons.Default.Edit, onClick = {authState = AuthState.EditProfile})
-                            ActionItem("View Reports", Icons.Default.BarChart, onClick = { /* Handle Reports */ })
+                            ActionItem("View Reports", Icons.Default.BarChart, onClick = {
+                                activity?.let {
+                                    moodViewModel.generatePdfReport(context, it)
+                                } ?: Log.e("MoodAnalysis", "Activity is null")
+                            })
                             ActionItem("Change Password", Icons.Default.Lock, onClick = { authState = AuthState.ChangePassword })
                         }
                     }
@@ -511,5 +520,5 @@ fun EditProfileUI(userData: UserData, onSave: () -> Unit, authViewModel: AuthVie
 @Preview(showBackground = true)
 @Composable
 fun ProfileScreenPreview() {
-    ProfileScreen(navController = NavController(MainActivity()), authViewModel = AuthViewModel(), onSignOut = {})
+    ProfileScreen(navController = NavController(MainActivity()), authViewModel = AuthViewModel(), moodViewModel = MoodViewModel(MainActivity.database.dailyCheckInDao()), onSignOut = {})
 }
