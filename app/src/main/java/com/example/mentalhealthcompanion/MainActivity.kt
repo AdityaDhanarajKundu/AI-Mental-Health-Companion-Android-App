@@ -51,6 +51,7 @@ import com.example.mentalhealthcompanion.db.DailyCheckInDao
 import com.example.mentalhealthcompanion.db.JournalDb
 import com.example.mentalhealthcompanion.ui.screens.HomeScreen
 import com.example.mentalhealthcompanion.ui.screens.JournalScreen
+import com.example.mentalhealthcompanion.ui.screens.MoodAnalysis
 import com.example.mentalhealthcompanion.ui.screens.ProfileScreen
 import com.example.mentalhealthcompanion.ui.theme.MentalHealthCompanionTheme
 import com.example.mentalhealthcompanion.viewmodel.AuthViewModel
@@ -188,6 +189,21 @@ class MainActivity : ComponentActivity() {
                         ProfileScreen(
                             navController = navController,
                             authViewModel = authViewModel,
+                            moodViewModel = moodViewModel,
+                            onSignOut = {
+                                isAuthenticated.value = false
+                                FirebaseAuth.getInstance().signOut()
+                                viewModel.resetState()
+                                navController.navigate("login"){
+                                    popUpTo("home") { inclusive = true } // Clear back stack
+                                }
+                            }
+                        )
+                    }
+                    composable("mood") {
+                        MoodAnalysis(
+                            navController = navController,
+                            moodViewModel = moodViewModel,
                             onSignOut = {
                                 isAuthenticated.value = false
                                 FirebaseAuth.getInstance().signOut()
