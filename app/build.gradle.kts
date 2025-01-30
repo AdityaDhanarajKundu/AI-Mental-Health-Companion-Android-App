@@ -56,6 +56,7 @@ android {
 
 dependencies {
 
+    implementation(libs.androidx.runtime.livedata)
     val nav_version = "2.8.5"
     val room_version = "2.6.1"
     implementation("androidx.room:room-runtime:$room_version")
@@ -82,6 +83,8 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.4.3")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation(libs.mpandroidchart)
+    implementation("com.itextpdf:itext7-core:9.0.0")
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
