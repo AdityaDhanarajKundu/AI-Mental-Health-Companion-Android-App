@@ -84,7 +84,7 @@ fun MoodAnalysis(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Journal",
+                        text = "Mood Analysis",
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onPrimary
                     )
