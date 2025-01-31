@@ -60,9 +60,10 @@ class MoodViewModel(private val dao : DailyCheckInDao) : ViewModel(){
         return when (mood.lowercase()){
             "joy", "love", "gratitude", "excitement", "pride", "optimism" -> 4.5f
             "neutral", "approval", "curiosity", "realization", "amusement" -> 3.0f
+            "mild sadness", "slightly down" -> 2.5f
             "sadness", "grief", "disappointment", "remorse", "nervousness" -> 1.5f
             "anger", "fear", "disgust", "annoyance", "disapproval" -> 1.0f
-            else -> 2.5f  // Default neutral score
+            else -> 3.0f  // Default neutral score
         }
     }
 
