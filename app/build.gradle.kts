@@ -85,6 +85,8 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation(libs.mpandroidchart)
     implementation("com.itextpdf:itext7-core:9.0.0")
+    implementation("com.airbnb.android:lottie:6.6.2")
+    implementation("com.airbnb.android:lottie-compose:6.6.2")
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
