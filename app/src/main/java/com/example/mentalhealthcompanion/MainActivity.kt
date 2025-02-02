@@ -51,11 +51,13 @@ import com.example.mentalhealthcompanion.db.DailyCheckInDao
 import com.example.mentalhealthcompanion.db.JournalDb
 import com.example.mentalhealthcompanion.ui.screens.HomeScreen
 import com.example.mentalhealthcompanion.ui.screens.JournalScreen
+import com.example.mentalhealthcompanion.ui.screens.MeditationScreen
 import com.example.mentalhealthcompanion.ui.screens.MoodAnalysis
 import com.example.mentalhealthcompanion.ui.screens.ProfileScreen
 import com.example.mentalhealthcompanion.ui.theme.MentalHealthCompanionTheme
 import com.example.mentalhealthcompanion.viewmodel.AuthViewModel
 import com.example.mentalhealthcompanion.viewmodel.JournalViewModel
+import com.example.mentalhealthcompanion.viewmodel.MeditationViewModel
 import com.example.mentalhealthcompanion.viewmodel.MoodViewModel
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.Identity
@@ -82,6 +84,7 @@ class MainActivity : ComponentActivity() {
     }
     private lateinit var journalViewModel: JournalViewModel
     private lateinit var moodViewModel: MoodViewModel
+    private lateinit var meditationViewModel: MeditationViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -94,6 +97,7 @@ class MainActivity : ComponentActivity() {
 
         journalViewModel = JournalViewModel(dao)
         moodViewModel = MoodViewModel(dao)
+        meditationViewModel = MeditationViewModel(application, moodViewModel)
         setContent {
             MentalHealthCompanionTheme {
                 val isAuthenticated = remember { mutableStateOf(false) }
@@ -204,6 +208,20 @@ class MainActivity : ComponentActivity() {
                         MoodAnalysis(
                             navController = navController,
                             moodViewModel = moodViewModel,
+                            onSignOut = {
+                                isAuthenticated.value = false
+                                FirebaseAuth.getInstance().signOut()
+                                viewModel.resetState()
+                                navController.navigate("login"){
+                                    popUpTo("home") { inclusive = true } // Clear back stack
+                                }
+                            }
+                        )
+                    }
+                    composable("meditation") {
+                        MeditationScreen(
+                            navController = navController,
+                            meditationViewModel = meditationViewModel,
                             onSignOut = {
                                 isAuthenticated.value = false
                                 FirebaseAuth.getInstance().signOut()
