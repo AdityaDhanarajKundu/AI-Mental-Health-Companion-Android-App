@@ -346,7 +346,13 @@ fun HomeScreen(navController: NavController, viewModel: JournalViewModel, onSign
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         Button(
-                            onClick = { /* Existing logic */ },
+                            onClick = {
+                                if (dailyCheckIn.isNotEmpty()) {
+                                    viewModel.addCheckIn(dailyCheckIn)
+                                    dailyCheckIn = ""
+                                    feeling = true
+                                }
+                            },
                             modifier = Modifier.fillMaxWidth(),
                             shape = MaterialTheme.shapes.large,
                             elevation = ButtonDefaults.buttonElevation(4.dp)
