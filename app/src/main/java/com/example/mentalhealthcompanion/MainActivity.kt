@@ -50,6 +50,7 @@ import com.example.mentalhealthcompanion.auth.SignInState
 import com.example.mentalhealthcompanion.db.DailyCheckInDao
 import com.example.mentalhealthcompanion.db.JournalDb
 import com.example.mentalhealthcompanion.ui.screens.HomeScreen
+import com.example.mentalhealthcompanion.ui.screens.InfoScreen
 import com.example.mentalhealthcompanion.ui.screens.JournalScreen
 import com.example.mentalhealthcompanion.ui.screens.MeditationScreen
 import com.example.mentalhealthcompanion.ui.screens.MoodAnalysis
@@ -222,6 +223,19 @@ class MainActivity : ComponentActivity() {
                         MeditationScreen(
                             navController = navController,
                             meditationViewModel = meditationViewModel,
+                            onSignOut = {
+                                isAuthenticated.value = false
+                                FirebaseAuth.getInstance().signOut()
+                                viewModel.resetState()
+                                navController.navigate("login"){
+                                    popUpTo("home") { inclusive = true } // Clear back stack
+                                }
+                            }
+                        )
+                    }
+                    composable("info") {
+                        InfoScreen(
+                            navController = navController,
                             onSignOut = {
                                 isAuthenticated.value = false
                                 FirebaseAuth.getInstance().signOut()

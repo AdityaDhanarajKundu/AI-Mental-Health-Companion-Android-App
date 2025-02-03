@@ -124,20 +124,6 @@ fun MoodAnalysis(
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
-        },
-        bottomBar = {
-            BottomAppBar(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ) {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                    text = "Made with ❤️ by Aditya Dhanaraj Kundu",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
         }
     ) {
         Column(
@@ -218,6 +204,16 @@ fun MoodAnalysis(
             ) {
                 Text("Sign Out")
             }
+            Text(
+                text = "Made with ❤️ by Aditya Dhanaraj Kundu",
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 24.dp),
+                textAlign = TextAlign.Center
+            )
         }
     }
 }

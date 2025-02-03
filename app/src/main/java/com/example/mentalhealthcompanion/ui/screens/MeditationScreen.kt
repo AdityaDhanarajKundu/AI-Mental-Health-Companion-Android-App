@@ -87,20 +87,6 @@ fun MeditationScreen(
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
             )
-        },
-        bottomBar = {
-            BottomAppBar(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ) {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                    text = "Made with ❤️ by Aditya Dhanaraj Kundu",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
         }
     ) {
         Column(
@@ -171,6 +157,16 @@ fun MeditationScreen(
                     Text("Stop", color = Color.LightGray)
                 }
             }
+            Text(
+                text = "Made with ❤️ by Aditya Dhanaraj Kundu",
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 24.dp),
+                textAlign = TextAlign.Center
+            )
         }
     }
 }
