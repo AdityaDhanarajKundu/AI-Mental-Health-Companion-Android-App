@@ -48,6 +48,8 @@ import androidx.navigation.NavController
 import com.example.mentalhealthcompanion.ui.components.MoodBarChart
 import com.example.mentalhealthcompanion.ui.components.MoodLineChart
 import com.example.mentalhealthcompanion.viewmodel.MoodViewModel
+import com.github.mikephil.charting.charts.BarChart
+import com.github.mikephil.charting.charts.LineChart
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,8 +68,14 @@ fun MoodAnalysis(
     val context = LocalContext.current
     val activity = (LocalView.current.context as? Activity)
 
+    val lineChartRef = remember { mutableStateOf<LineChart?>(null) }
+    val barChartRef = remember { mutableStateOf<BarChart?>(null) }
+
     LaunchedEffect(Unit) {
         moodViewModel.getMoodTrends()
+    }
+    LaunchedEffect(moodTrends) {
+        moodViewModel.updateChartReferences(lineChartRef.value, barChartRef.value)
     }
 
     val mentalHealthMessages = listOf(
@@ -148,12 +156,12 @@ fun MoodAnalysis(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text("Mood Trends", style = MaterialTheme.typography.titleMedium)
-            MoodLineChart(moodTrends)
+            MoodLineChart(moodTrends){ chart -> lineChartRef.value = chart}
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Text("Mood Distribution", style = MaterialTheme.typography.titleMedium)
-            MoodBarChart(moodTrends)
+            MoodBarChart(moodTrends){ chart -> barChartRef.value = chart}
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -177,7 +185,7 @@ fun MoodAnalysis(
             OutlinedButton(
                 onClick = {
                     activity?.let {
-                        moodViewModel.generatePdfReport(context, it)
+                        moodViewModel.generatePdfReport(context, it, lineChartRef.value, barChartRef.value)
                     } ?: Log.e("MoodAnalysisScreen", "Activity is null")
                 },
                 modifier = Modifier.align(Alignment.CenterHorizontally),

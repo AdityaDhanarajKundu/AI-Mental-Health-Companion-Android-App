@@ -4,6 +4,8 @@ import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
 import android.os.Build
 import android.os.Environment
@@ -11,6 +13,7 @@ import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
@@ -19,6 +22,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mentalhealthcompanion.db.DailyCheckInDao
 import com.example.mentalhealthcompanion.db.MoodData
+import com.github.mikephil.charting.charts.BarChart
+import com.github.mikephil.charting.charts.Chart
+import com.github.mikephil.charting.charts.LineChart
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
@@ -35,6 +41,14 @@ class MoodViewModel(private val dao : DailyCheckInDao) : ViewModel(){
     val averageMood : LiveData<Float> get() = _averageMood
     private val _suggestPsychiatrist = MutableLiveData<Boolean>()
     val suggestPsychiatrist: LiveData<Boolean> get() = _suggestPsychiatrist
+
+    val lineChartRef = mutableStateOf<LineChart?>(null)
+    val barChartRef = mutableStateOf<BarChart?>(null)
+
+    fun updateChartReferences(lineChart: LineChart?, barChart: BarChart?){
+        lineChartRef.value = lineChart
+        barChartRef.value = barChart
+    }
 
     // get all the daily checkin values convert them into mood data and store them in mood values after processing
     fun getMoodTrends(){
@@ -79,25 +93,56 @@ class MoodViewModel(private val dao : DailyCheckInDao) : ViewModel(){
         return negativeMoods.toFloat() / totalEntries.toFloat() >= 0.5       // if negative moods are more than or equal to half of the total entries size
     }
 
-    fun generatePdfReport(context: Context, activity: Activity) : String{
+    fun generatePdfReport(context: Context, activity: Activity): String {
+        return generatePdfReport(context, activity, lineChartRef.value, barChartRef.value)
+    }
+
+    fun generatePdfReport(context: Context, activity: Activity, moodLineChart: LineChart?, moodBarChart: BarChart?) : String{
         val pdfDocument = PdfDocument()
-        val pageInfo = PdfDocument.PageInfo.Builder(300,600,1).create()
+        val pageInfo = PdfDocument.PageInfo.Builder(600,900,1).create()
         val page = pdfDocument.startPage(pageInfo)
 
         val canvas = page.canvas
-        val paint = android.graphics.Paint()
-        paint.textSize = 14f
+        val paint = android.graphics.Paint().apply {
+            textSize = 16f
+            typeface = Typeface.DEFAULT_BOLD
+        }
 
         val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-        canvas.drawText("Mood Analysis Report - $currentDate", 10f, 20f, paint)
+        canvas.drawText("Mood Analysis Report - $currentDate", 20f, 40f, paint)
+
+        paint.textSize = 14f
+        paint.typeface = Typeface.DEFAULT
+        canvas.drawText("Summary:", 20f, 70f, paint)
+
 
         val trends = _moodTrends.value ?: emptyList()
-        var yPosition = 50f
+        var yPosition = 150f
+        val avgMood = _averageMood.value ?: 0.0
+        canvas.drawText("Average Mood Score: ${String.format("%.2f", avgMood)}", 20f, 100f, paint)
+        canvas.drawText("Total Entries: ${trends.size}", 20f, 120f, paint)
 
-        for(entry in trends){
-            canvas.drawText("${entry.date}: ${entry.moodLabel} (${entry.moodScore})", 10f, yPosition, paint)
-            yPosition += 20
+
+        for (entry in trends.take(5)) { // Show top 5 recent moods
+            canvas.drawText("${entry.date}: ${entry.moodLabel} (${entry.moodScore})", 20f, yPosition, paint)
+            yPosition += 25
         }
+
+        // Insert Mood Line Chart
+        val lineChartBitmap = moodLineChart?.let { getChartBitmap(it) }
+        if (lineChartBitmap != null) {
+            val scaledLineChart = Bitmap.createScaledBitmap(lineChartBitmap, 500, 250, true)
+            canvas.drawBitmap(scaledLineChart, 50f, yPosition + 30, paint)
+            yPosition += 280
+        }
+
+        // Insert Mood Bar Chart
+        val barChartBitmap = moodBarChart?.let { getChartBitmap(it) }
+        if (barChartBitmap != null) {
+            val scaledBarChart = Bitmap.createScaledBitmap(barChartBitmap, 500, 250, true)
+            canvas.drawBitmap(scaledBarChart, 50f, yPosition + 30, paint)
+        }
+
         pdfDocument.finishPage(page)
 
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -138,6 +183,19 @@ class MoodViewModel(private val dao : DailyCheckInDao) : ViewModel(){
             Log.e("generatePdfReport", "Failed to insert file into MediaStore.")
             Toast.makeText(context, "Failed to create file", Toast.LENGTH_LONG).show()
             ""
+        }
+    }
+
+    fun getChartBitmap(chart: Chart<*>): Bitmap? {
+        return try {
+            chart.isDrawingCacheEnabled = true
+            chart.buildDrawingCache()
+            val bitmap = Bitmap.createBitmap(chart.drawingCache)
+            chart.isDrawingCacheEnabled = false
+            bitmap
+        } catch (e: Exception) {
+            Log.e("PDF Report", "Error capturing chart bitmap", e)
+            null
         }
     }
 

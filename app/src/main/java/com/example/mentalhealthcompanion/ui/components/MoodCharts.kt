@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.example.mentalhealthcompanion.R
 import com.example.mentalhealthcompanion.db.MoodData
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.LineChart
@@ -25,7 +26,7 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 
 @Composable
-fun MoodLineChart(moodData: List<MoodData>){
+fun MoodLineChart(moodData: List<MoodData>, onChartReady: (LineChart) -> Unit){
     AndroidView(
         factory = {context ->
             LineChart(context).apply {
@@ -67,6 +68,8 @@ fun MoodLineChart(moodData: List<MoodData>){
                 isDragEnabled = true
                 setScaleEnabled(true)
                 setTouchEnabled(true)
+
+                onChartReady(this)
             }
         },
         modifier = Modifier
@@ -95,7 +98,7 @@ fun MoodLineChart(moodData: List<MoodData>){
 }
 
 @Composable
-fun MoodBarChart(moodData: List<MoodData>){
+fun MoodBarChart(moodData: List<MoodData>, onChartReady: (BarChart) -> Unit){
     AndroidView(
         factory = {context ->
             BarChart(context).apply {
@@ -136,6 +139,8 @@ fun MoodBarChart(moodData: List<MoodData>){
                 isDragEnabled = true
                 setScaleEnabled(true)
                 setTouchEnabled(true)
+
+                onChartReady(this)
             }
         },
         modifier = Modifier
