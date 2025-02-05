@@ -1,7 +1,15 @@
 package com.example.mentalhealthcompanion.ui.screens
 
+import android.os.Build
+import android.speech.tts.TextToSpeech
+import android.speech.tts.Voice
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +34,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.Checklist
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Grade
 import androidx.compose.material.icons.filled.MonitorHeart
 import androidx.compose.material.icons.outlined.Edit
@@ -82,14 +91,51 @@ import com.example.mentalhealthcompanion.service.Quote
 import com.example.mentalhealthcompanion.utils.Constants.tips
 import com.example.mentalhealthcompanion.viewmodel.AuthViewModel
 import com.example.mentalhealthcompanion.viewmodel.JournalViewModel
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController, viewModel: JournalViewModel, onSignOut : () -> Unit = {}, authViewModel: AuthViewModel) {
+fun HomeScreen(
+    navController: NavController,
+    viewModel: JournalViewModel,
+    onSignOut: () -> Unit = {},
+    authViewModel: AuthViewModel
+) {
     val quote = remember { mutableStateOf<Quote?>(null) }
     var feeling by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val userData by authViewModel.userData.collectAsState()
+    var showRecommendation by remember { mutableStateOf(false) }
+    var recommendation by remember { mutableStateOf("") }
+    var tts by remember { mutableStateOf<TextToSpeech?>(null) }
+
+    LaunchedEffect(Unit) {
+        tts = TextToSpeech(context){
+            if(it == TextToSpeech.SUCCESS){
+                val availableLanguages = tts?.availableLanguages
+                val targetLocale = Locale("en", "IN")
+                val selectedVoice: Voice? =
+                    tts?.voices?.find { voice ->
+                        voice.locale == targetLocale && voice.name.contains("female", ignoreCase = true)
+                    } ?: tts?.voices?.find { voice ->
+                        voice.locale == targetLocale
+                    }
+                if (selectedVoice != null) {
+                    tts?.setVoice(selectedVoice)
+                    Log.d("TTS", "Voice set: ${selectedVoice.name}")
+                } else {
+                    Log.w("TTS", "No suitable Indian English voice found.")
+                    if (availableLanguages?.contains(targetLocale) == true) {
+                        tts?.language = targetLocale
+                    }
+                }
+
+                tts?.setSpeechRate(0.8f)
+            }else{
+                Log.e("TTS", "Voice Initialization failed $it")
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         authViewModel.fetchUserDataFromFirestore { isSuccess ->
@@ -105,12 +151,12 @@ fun HomeScreen(navController: NavController, viewModel: JournalViewModel, onSign
             if (result.isNotEmpty()) {
                 quote.value = result[0]
             }
-        }catch (e: Exception){
+        } catch (e: Exception) {
             e.printStackTrace()
         }
     }
     LaunchedEffect(key1 = feeling) {
-        if (feeling){
+        if (feeling) {
             Toast.makeText(context, "Feeling saved successfully!", Toast.LENGTH_SHORT).show()
             feeling = false
         }
@@ -122,9 +168,9 @@ fun HomeScreen(navController: NavController, viewModel: JournalViewModel, onSign
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
                 ),
-                title = { Text(text = "E-MotionAI", style = MaterialTheme.typography.titleLarge)},
+                title = { Text(text = "E-MotionAI", style = MaterialTheme.typography.titleLarge) },
                 actions = {
-                    IconButton(onClick = {navController.navigate("profile")}) {
+                    IconButton(onClick = { navController.navigate("profile") }) {
                         Icon(
                             imageVector = Icons.Filled.AccountCircle,
                             contentDescription = "Profile",
@@ -143,9 +189,11 @@ fun HomeScreen(navController: NavController, viewModel: JournalViewModel, onSign
                 .padding(16.dp),
         ) {
             item {
-                Column(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp)
+                ) {
                     Text(
                         text = "Welcome back, ${userData?.username?.split(" ")?.get(0) ?: "User"}!",
                         style = MaterialTheme.typography.headlineSmall.copy(
@@ -176,19 +224,21 @@ fun HomeScreen(navController: NavController, viewModel: JournalViewModel, onSign
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(300.dp)
-                ){
+                ) {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
                         modifier = Modifier.padding(vertical = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(listOf(
-                            Triple("Journal", Icons.Outlined.Edit, "journal"),
-                            Triple("Meditation", Icons.Outlined.SelfImprovement, "meditation"),
-                            Triple("Mood Analysis", Icons.Filled.MonitorHeart, "mood"),
-                            Triple("Info", Icons.Outlined.Info, "info")
-                        )){(title, icon, route) ->
+                        items(
+                            listOf(
+                                Triple("Journal", Icons.Outlined.Edit, "journal"),
+                                Triple("Meditation", Icons.Outlined.SelfImprovement, "meditation"),
+                                Triple("Mood Analysis", Icons.Filled.MonitorHeart, "mood"),
+                                Triple("Info", Icons.Outlined.Info, "info")
+                            )
+                        ) { (title, icon, route) ->
                             ElevatedCard(
                                 onClick = { navController.navigate(route) },
                                 modifier = Modifier
@@ -198,14 +248,14 @@ fun HomeScreen(navController: NavController, viewModel: JournalViewModel, onSign
                                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
                                 ),
                                 elevation = CardDefaults.cardElevation(2.dp)
-                            ){
+                            ) {
                                 Column(
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .padding(16.dp),
                                     verticalArrangement = Arrangement.Center,
                                     horizontalAlignment = Alignment.CenterHorizontally
-                                ){
+                                ) {
                                     Icon(
                                         imageVector = icon,
                                         contentDescription = title,
@@ -236,7 +286,7 @@ fun HomeScreen(navController: NavController, viewModel: JournalViewModel, onSign
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(bottom = 8.dp)
-                        ){
+                        ) {
                             Icon(
                                 imageVector = Icons.Filled.Checklist,
                                 contentDescription = "Tips",
@@ -250,8 +300,8 @@ fun HomeScreen(navController: NavController, viewModel: JournalViewModel, onSign
                                 )
                             )
                         }
-                        val randomTips = remember {tips.shuffled().take(3)}
-                        randomTips.forEach{
+                        val randomTips = remember { tips.shuffled().take(3) }
+                        randomTips.forEach {
                             Text(
                                 text = "- $it",
                                 style = MaterialTheme.typography.bodyMedium,
@@ -273,11 +323,11 @@ fun HomeScreen(navController: NavController, viewModel: JournalViewModel, onSign
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp)
-                    ){
+                    ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(bottom = 8.dp)
-                        ){
+                        ) {
                             Icon(
                                 imageVector = Icons.Outlined.FormatQuote,
                                 contentDescription = "Quote",
@@ -308,6 +358,65 @@ fun HomeScreen(navController: NavController, viewModel: JournalViewModel, onSign
                     }
                 }
             }
+            //Animated Recommendation Card
+            item {
+                if (showRecommendation) {
+                    AnimatedVisibility(
+                        visible = showRecommendation,
+                        enter = fadeIn() + slideInVertically(),
+                        exit = fadeOut() + slideOutVertically()
+                    ) {
+                        ElevatedCard(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            elevation = CardDefaults.cardElevation(4.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "🌸This Might Help You🌼",
+                                    style = MaterialTheme.typography.titleLarge.copy(
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                )
+                                IconButton(
+                                    onClick = {
+                                        showRecommendation = false
+                                        if (tts?.isSpeaking == true){
+                                            tts!!.stop()
+                                        }
+                                        tts?.shutdown()
+                                    }
+                                ) {
+                                    Icon(
+                                        Icons.Filled.Close,
+                                        contentDescription = "close",
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            }
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(
+                                    text = recommendation,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontSize = 16.sp,
+                                    color = MaterialTheme.colorScheme.tertiary
+                                )
+                            }
+                        }
+                    }
+                }
+            }
             // Daily Check-In Section
             item {
                 ElevatedCard(
@@ -316,10 +425,10 @@ fun HomeScreen(navController: NavController, viewModel: JournalViewModel, onSign
                         .padding(vertical = 8.dp),
                     elevation = CardDefaults.cardElevation(4.dp)
                 ) {
-                    var dailyCheckIn by remember {mutableStateOf("")}
+                    var dailyCheckIn by remember { mutableStateOf("") }
                     Column(
                         modifier = Modifier.padding(16.dp)
-                    ){
+                    ) {
                         Text(
                             text = "Daily Check-In",
                             style = MaterialTheme.typography.titleLarge.copy(
@@ -348,7 +457,16 @@ fun HomeScreen(navController: NavController, viewModel: JournalViewModel, onSign
                         Button(
                             onClick = {
                                 if (dailyCheckIn.isNotEmpty()) {
-                                    viewModel.addCheckIn(dailyCheckIn)
+                                    viewModel.addCheckIn(dailyCheckIn) { sentiment ->
+                                        recommendation = viewModel.getRecommendation(sentiment)
+                                        showRecommendation = true
+                                        tts?.speak(
+                                            recommendation,
+                                            TextToSpeech.QUEUE_FLUSH,
+                                            null,
+                                            null
+                                        )
+                                    }
                                     dailyCheckIn = ""
                                     feeling = true
                                 }
@@ -365,7 +483,9 @@ fun HomeScreen(navController: NavController, viewModel: JournalViewModel, onSign
             // Sign Out Option
             item {
                 Box(
-                    modifier = Modifier.fillMaxWidth().padding(top = 18.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 18.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Button(
@@ -398,7 +518,7 @@ fun HomeScreen(navController: NavController, viewModel: JournalViewModel, onSign
 }
 
 @Composable
-fun HomeAnimationView(resId: Int, modifier: Modifier = Modifier){
+fun HomeAnimationView(resId: Int, modifier: Modifier = Modifier) {
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(resId))
     LottieAnimation(
         composition = composition,
@@ -409,6 +529,11 @@ fun HomeAnimationView(resId: Int, modifier: Modifier = Modifier){
 
 @Preview(showBackground = true)
 @Composable
-fun HomeScreenPreview(){
-    HomeScreen(navController = NavController(MainActivity()), viewModel = JournalViewModel(dao = MainActivity.database.dailyCheckInDao()), onSignOut = {}, authViewModel = AuthViewModel())
+fun HomeScreenPreview() {
+    HomeScreen(
+        navController = NavController(MainActivity()),
+        viewModel = JournalViewModel(dao = MainActivity.database.dailyCheckInDao()),
+        onSignOut = {},
+        authViewModel = AuthViewModel()
+    )
 }

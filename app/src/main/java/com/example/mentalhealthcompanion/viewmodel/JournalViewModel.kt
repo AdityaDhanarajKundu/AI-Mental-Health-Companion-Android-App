@@ -190,6 +190,48 @@ class JournalViewModel(private val dao: DailyCheckInDao) : ViewModel() {
                 "Find the silver lining in something that didn’t go as planned. Growth often comes from unexpected places.",
                 "Embrace today with open arms. With the right mindset, anything feels possible."
             ),
+            "pride" to listOf(
+                "Take a moment to truly appreciate your achievement—you earned it!",
+                "Celebrate with the people who supported you on this journey.",
+                "Use this feeling as a stepping stone for your next big goal.",
+                "Write down what you're proud of and revisit it on tough days.",
+                "Remember: Every small victory adds up to something amazing!"
+            ),
+            "realization" to listOf(
+                "Write down your thoughts—it helps clarify your newfound understanding.",
+                "Share your realization with someone you trust; their perspective matters too.",
+                "Turn your insight into action and make a meaningful change.",
+                "Sometimes, realizations are tough—give yourself time to process them.",
+                "Growth often comes from deep realizations; embrace the journey!"
+            ),
+            "relief" to listOf(
+                "Close your eyes, take a deep breath, and enjoy this peaceful moment.",
+                "Reflect on what led to your stress and how you overcame it—you did great!",
+                "Celebrate your relief with a self-care activity you love.",
+                "Share your relief with someone who supported you through the tough times.",
+                "Use this moment as a reminder that challenges are temporary."
+            ),
+            "remorse" to listOf(
+                "It's okay to feel this way—acknowledge your emotions with kindness.",
+                "If your actions hurt someone, a sincere apology can go a long way.",
+                "Learn from this moment so you can grow into a better version of yourself.",
+                "Write a letter to yourself about what you’ve learned from this experience.",
+                "Mistakes happen, but they don’t define you—use them to become stronger."
+            ),
+            "sadness" to listOf(
+                "Wrap yourself in a cozy blanket and listen to your favorite calming music.",
+                "Talk to someone you trust—sometimes, sharing helps lighten the burden.",
+                "Write your thoughts in a journal; it’s a great way to release emotions.",
+                "Go for a gentle walk and let nature soothe your heart.",
+                "It’s okay to feel sad—give yourself permission to rest and heal."
+            ),
+            "surprise" to listOf(
+                "Take a deep breath and enjoy this unexpected moment!",
+                "Share the surprise with someone—it’s always fun to see their reaction!",
+                "Sometimes, surprises bring new opportunities—stay open to what’s next.",
+                "Journal your feelings about this moment—you might appreciate it later.",
+                "Life is full of surprises; embrace the adventure!"
+            ),
             "neutral" to listOf(
                 "Use this moment of balance to check in with yourself. How are you really feeling beneath the surface?",
                 "Plan something to look forward to, even if it’s small. A little excitement goes a long way.",
@@ -200,16 +242,17 @@ class JournalViewModel(private val dao: DailyCheckInDao) : ViewModel() {
         )
 
         val emotionRecommendations = recommendations[sentiment.lowercase()]
-        return emotionRecommendations?.shuffled()?.take(5)?.joinToString("\n\n") { "- $it" }
+        return emotionRecommendations?.random()
             ?: "Take some time to reflect on your emotions and focus on self-care."
     }
 
 
-    fun addCheckIn(feeling: String){
+    fun addCheckIn(feeling: String, onSentimentAnalyzed: (String) -> Unit){
         viewModelScope.launch {
             try {
                 val sentiment = analyzeSentiment(feeling)
                 saveCheckIn(feeling = feeling,sentiment)
+                onSentimentAnalyzed(sentiment)
             }catch (e : Exception){
                 Log.e("JournalViewModel", "Error Adding Daily Check In", e)
             }
