@@ -395,7 +395,6 @@ fun HomeScreen(
                                         if (tts?.isSpeaking == true){
                                             tts!!.stop()
                                         }
-                                        tts?.shutdown()
                                     }
                                 ) {
                                     Icon(
