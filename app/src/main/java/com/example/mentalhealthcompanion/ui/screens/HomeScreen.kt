@@ -457,7 +457,7 @@ fun HomeScreen(
                             onClick = {
                                 if (dailyCheckIn.isNotEmpty()) {
                                     viewModel.addCheckIn(dailyCheckIn) { sentiment ->
-                                        recommendation = viewModel.getRecommendation(sentiment)
+                                        recommendation = viewModel.getVoiceRecommendation(sentiment)
                                         showRecommendation = true
                                         tts?.speak(
                                             recommendation,
