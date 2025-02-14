@@ -472,7 +472,7 @@ class JournalViewModel(private val dao: DailyCheckInDao) : ViewModel() {
         return withContext(Dispatchers.IO) {
             try {
                 val request = Request.Builder()
-                    .url("http://10.0.2.2:5000/analyze")
+                    .url("https://refined-vervet-trivially.ngrok-free.app/analyze")
                     .post(requestBody)
                     .build()
 
